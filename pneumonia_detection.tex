@@ -191,25 +191,20 @@ Replaced the original classification head with a custom binary output layer, tra
 The ResNet-18 architecture was chosen as the foundational model for this study due to its proven reliability and efficiency in image classification tasks. ResNet-18, a convolutional neural network with 18 layers, was pre-trained on the ImageNet dataset, which contains millions of labeled images spanning various categories. The use of pre-trained weights from ImageNet provides a robust starting point, enabling the model to leverage features learned from a large and diverse dataset. These pre-trained features help the model quickly adapt to the task of pneumonia detection, even with a relatively smaller dataset, as shown in Fig.~\ref{fig:model_architecture}.
 
 The core innovation of ResNet-18 lies in its residual learning framework, which addresses the degradation problem in deep networks through skip connections, as illustrated in Fig.~\ref{fig:resnet18}. Traditional deep networks face challenges with vanishing gradients, where the error signal diminishes as it propagates backward through multiple layers. ResNet's skip connections create shortcut paths for gradient flow, enabling the training of deeper networks without performance degradation. Each residual block in ResNet-18 can be mathematically represented as:
-
-y=F(x,W)+x
+\begin{equation}
+y = F(x, W) + x
+\end{equation}
 
 where:
-
 \begin{itemize}
-\item
-  \emph{x\textbackslash mathbf\{x\}}x is the input to the residual block.
-\item
-  \emph{F(x,W)\textbackslash mathcal\{F\}(\textbackslash mathbf\{x\}, W)}F(x,W) represents the residual mapping, typically consisting of convolutional layers, batch normalization, and activation functions.
-\item
-  \emph{WW}W denotes the weights of the convolutional layers.
-\item
-  The addition \emph{x+F(x,W)\textbackslash mathbf\{x\} + \textbackslash mathcal\{F\}(\textbackslash mathbf\{x\}, W)}x+F(x,W) represents the skip (shortcut) connection, allowing gradients to flow directly through the network during backpropagation.
-\item
-  \emph{y\textbackslash mathbf\{y\}}y is the output of the residual block, which is then passed to the next layer.
+\item $x$ is the input to the residual block.
+\item $F(x, W)$ represents the residual mapping, typically consisting of convolutional layers, batch normalization, and activation functions.
+\item $W$ denotes the weights of the convolutional layers.
+\item The addition $x + F(x, W)$ represents the skip (shortcut) connection, allowing gradients to flow directly through the network during backpropagation.
+\item $y$ is the output of the residual block, which is then passed to the next layer.
 \end{itemize}
 
-Where x is the input to the residual block, F(x, \{W\_i\}) represents the residual mapping to be learned through convolutional layers, and y is the output. This formulation allows the network to learn residual functions with reference to the identity mapping, which is easier to optimize than learning the complete transformation directly.
+Where $x$ is the input to the residual block, $F(x, \{W_i\})$ represents the residual mapping to be learned through convolutional layers, and $y$ is the output. This formulation allows the network to learn residual functions with reference to the identity mapping, which is easier to optimize than learning the complete transformation directly.
 
 \begin{figure}[!t]
 \centering
@@ -218,34 +213,14 @@ Where x is the input to the residual block, F(x, \{W\_i\}) represents the residu
 \label{fig:resnet18}
 \end{figure}
 
-The ResNet-18 architecture consists of an initial 7×7 convolutional layer with 64 filters and stride 2, followed by a 3×3 max pooling layer with stride 2. These initial layers reduce the spatial dimensions while capturing basic features. The subsequent layers are organized into four modules, each containing multiple residual blocks:
+The ResNet-18 architecture consists of an initial $7 \times 7$ convolutional layer with 64 filters and stride 2, followed by a $3 \times 3$ max pooling layer with stride 2. These initial layers reduce the spatial dimensions while capturing basic features. The subsequent layers are organized into four modules, each containing multiple residual blocks:
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  Module 1: Two residual blocks with 64 filters each
-\end{enumerate}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{1}
-\item
-  Module 2: Two residual blocks with 128 filters each
-\end{enumerate}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{2}
-\item
-  Module 3: Two residual blocks with 256 filters each
-\end{enumerate}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{3}
-\item
-  Module 4: Two residual blocks with 512 filters each
-\end{enumerate}
+\begin{itemize}
+\item \textbf{Module 1:} Two residual blocks with 64 filters each
+\item \textbf{Module 2:} Two residual blocks with 128 filters each
+\item \textbf{Module 3:} Two residual blocks with 256 filters each
+\item \textbf{Module 4:} Two residual blocks with 512 filters each
+\end{itemize}
 
 Each module progressively reduces spatial dimensions while increasing feature channels, enabling the network to capture increasingly complex patterns. The final layers include global average pooling followed by a fully connected layer with 1000 output units (for ImageNet classification).
 
@@ -255,31 +230,18 @@ The transfer learning strategy implemented in this study involves freezing the e
 
 This selective freezing approach offers several advantages:
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  It preserves the robust feature extraction capabilities learned from the diverse ImageNet dataset
-\end{enumerate}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{1}
-\item
-  It reduces the number of trainable parameters, mitigating overfitting on the relatively smaller medical dataset
-\end{enumerate}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{2}
-\item
-  It accelerates training by focusing computation on adapting higher-level features relevant to pneumonia detection
-\end{enumerate}
+\begin{itemize}
+\item It preserves the robust feature extraction capabilities learned from the diverse ImageNet dataset
+\item It reduces the number of trainable parameters, mitigating overfitting on the relatively smaller medical dataset
+\item It accelerates training by focusing computation on adapting higher-level features relevant to pneumonia detection
+\end{itemize}
 
 The modified architecture can be mathematically expressed as:
+\begin{equation}
+f(x) = \text{softmax}(W_{\text{fc}} \cdot \text{GAP}(\text{ResNet}_{\text{modified}}(x)) + b_{\text{fc}})
+\end{equation}
 
-f(x) = softmax(W\_fc ·GAP(ResNet\_modified(x)) + b\_fc)
-
-Where x is the input chest X-ray image, ResNet\_modified represents the modified ResNet-18 backbone, GAP is the global average pooling operation, W\_fc and b\_fc are the weights and biases of the final fully connected layer, and softmax is the activation function that produces probability outputs.
+Where $x$ is the input chest X-ray image, $\text{ResNet}_{\text{modified}}$ represents the modified ResNet-18 backbone, GAP is the global average pooling operation, $W_{\text{fc}}$ and $b_{\text{fc}}$ are the weights and biases of the final fully connected layer, and softmax is the activation function that produces probability outputs.
 
 \begin{enumerate}
 \def\labelenumi{\Alph{enumi}.}
@@ -429,15 +391,12 @@ loss was~utilized due to its effectiveness in classification~tasks. This
 function quantifies the difference between the predicted probabilities
 and the actual class labels, providing~a clear metric to guide~the
 model's learning~process. For~binary classification, the
-cross-entropy loss is defined as
+cross-entropy loss is defined as:
+\begin{equation}
+L(y, \hat{y}) = -[y \log(\hat{y}) + (1-y)\log(1-\hat{y})]
+\end{equation}
 
-:L(y,~ŷ)~= -{[}y log(ŷ) + (1-y)log(1-ŷ){]}
-
-Where y is the true label~(0 for~NORMAL, 1~for PNEUMONIA) and ŷ~is the
-predicted probability. To address~class imbalance, the~loss function was
-weighted inversely proportional to class~frequencies, assigning higher
-importance~to the minority class. By minimizing this loss, the~model was
-encouraged to make accurate predictions consistently.
+Where $y$ is the true label (0 for NORMAL, 1 for PNEUMONIA) and $\hat{y}$ is the predicted probability. To address class imbalance, the loss function was weighted inversely proportional to class frequencies, assigning higher importance to the minority class. By minimizing this loss, the model was encouraged to make accurate predictions consistently.
 
 To~optimize the model's~parameters during training, the
 Adam optimizer~was employed with an initial learning rate set~at 0.001.
@@ -547,7 +506,9 @@ the~sklearn.metrics library was employed. This metric provides~a
 straightforward measure by~calculating the proportion of
 correctly~classified images out~of the total test~samples:
 
-Accuracy = (TP~+ TN) / (TP + TN + FP~+ FN)
+\begin{equation}
+\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}
+\end{equation}
 
 Where~TP (True Positives) represents correctly identified pneumonia
 cases, TN~(True Negatives) represents correctly identified normal~cases,
@@ -562,49 +523,52 @@ model's capabilities:
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  Precision~(Positive Predictive Value): TP /~(TP + FP)
+  \textbf{Precision} (Positive Predictive Value): 
+  \begin{equation}
+  \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
+  \end{equation}
+  Measures the proportion of correctly identified pneumonia cases among all cases classified as pneumonia.
 \end{enumerate}
-
-Measures~the proportion of correctly identified pneumonia cases among
-all~cases classified as pneumonia.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \setcounter{enumi}{1}
 \item
-  Recall~(Sensitivity): TP~/ (TP~+ FN)
+  \textbf{Recall} (Sensitivity): 
+  \begin{equation}
+  \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
+  \end{equation}
+  Measures the proportion of actual pneumonia cases correctly identified by the model.
 \end{enumerate}
-
-Measures the proportion of~actual pneumonia cases correctly~identified
-by the model.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \setcounter{enumi}{2}
 \item
-  Specificity: TN~/ (TN + FP)
+  \textbf{Specificity}: 
+  \begin{equation}
+  \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+  \end{equation}
+  Measures the proportion of actual normal cases correctly identified by the model.
 \end{enumerate}
-
-Measures the proportion of~actual normal cases correctly identified
-by~the model.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \setcounter{enumi}{3}
 \item
-  F1-score: 2~× (Precision~× Recall) / (Precision + Recall)
+  \textbf{F1-score}: 
+  \begin{equation}
+  \text{F1-score} = \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+  \end{equation}
+  Represents the harmonic mean of precision and recall, providing a balanced measure of the model's performance.
 \end{enumerate}
-
-Represents the~harmonic mean of precision and recall, providing a
-balanced measure~of the model's performance.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \setcounter{enumi}{4}
 \item
-  Area Under the~Receiver Operating Characteristic Curve~(AUC-ROC):
-  Evaluates the model's~discrimination ability across
-  different threshold settings.
+  \textbf{Area Under the Receiver Operating Characteristic Curve (AUC-ROC)}:
+  Evaluates the model's discrimination ability across different threshold settings.
 \end{enumerate}
 
 A high accuracy score indicates~the model's
