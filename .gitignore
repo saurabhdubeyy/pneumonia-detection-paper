@@ -1,0 +1,43 @@
+# LaTeX temporary files
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.fls
+*.out
+*.synctex.gz
+*.fdb_latexmk
+
+# PDF output - usually we want to keep this, but comment out if needed
+# *.pdf
+
+# BibTeX
+*.bbl
+*.blg
+*.bst
+*.bcf
+*.run.xml
+
+# Beamer
+*.nav
+*.pre
+*.snm
+*.vrb
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db 
